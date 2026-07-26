@@ -1,0 +1,169 @@
+# Amazon E-Commerce API
+
+Spring Boot REST API for an Amazon-style e-commerce platform with JWT authentication, role-based access control, MySQL persistence, and PDF invoice generation.
+
+## Requirements
+
+- Java 17+
+- Maven 3.8+
+- MySQL 8.0+
+
+## Setup
+
+### 1. Create the database
+
+```sql
+CREATE DATABASE amazon_ecommerce;
+```
+
+### 2. Configure credentials
+
+Edit `src/main/resources/application.properties`:
+
+```properties
+spring.datasource.username=your_user
+spring.datasource.password=your_password
+```
+
+### 3. Run the application
+
+```bash
+mvn spring-boot:run
+```
+
+The API starts at `http://localhost:8080`.
+
+## Default Admin
+
+On first startup, the `DataInitializer` seeds the database with:
+
+| Username | Password   | Roles              |
+| -------- | ---------- | ------------------ |
+| `admin`  | `admin123` | ROLE_ADMIN, ROLE_USER |
+
+## Authentication
+
+All endpoints except `/api/auth/**` require a JWT Bearer token in the `Authorization` header:
+
+```
+Authorization: Bearer <token>
+```
+
+### Register a new user
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "username": "john",
+  "email": "john@example.com",
+  "password": "pass123",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+```
+
+### Login
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+Response includes a `token` field — use this as the Bearer token.
+
+## API Endpoints
+
+### Products (`/api/products`)
+
+| Method | Path            | Auth     | Description              |
+| ------ | --------------- | -------- | ------------------------ |
+| GET    | `/api/products` | User     | List all products        |
+| GET    | `/api/products/{id}` | User | Get product by ID       |
+| POST   | `/api/products` | Admin    | Create product           |
+| PUT    | `/api/products/{id}` | Admin | Update product         |
+| DELETE | `/api/products/{id}` | Admin | Delete product         |
+
+```json
+// POST / PUT request body
+{
+  "name": "Wireless Mouse",
+  "description": "Ergonomic wireless mouse",
+  "price": 29.99,
+  "quantity": 100,
+  "imageUrls": ["https://example.com/mouse.jpg"]
+}
+```
+
+### Cart (`/api/cart`) — USER role only
+
+| Method | Path           | Description              |
+| ------ | -------------- | ------------------------ |
+| GET    | `/api/cart`    | View cart items          |
+| POST   | `/api/cart`    | Add item to cart         |
+| PUT    | `/api/cart/{id}` | Update item quantity   |
+| DELETE | `/api/cart/{id}` | Remove item from cart |
+
+```json
+// POST / PUT request body
+{
+  "productId": 1,
+  "quantity": 2
+}
+```
+
+### Orders (`/api/orders`)
+
+| Method | Path                  | Auth | Description                  |
+| ------ | --------------------- | ---- | ---------------------------- |
+| POST   | `/api/orders`         | User | Place order from cart        |
+| GET    | `/api/orders`         | User | List own orders              |
+| GET    | `/api/orders/{id}`    | User | Get order details            |
+| GET    | `/api/orders/{id}/pdf` | User | Download order as PDF       |
+
+Optional query parameter for POST: `?shippingAddress=123 Main St`
+
+### Admin (`/api/admin`) — ADMIN role only
+
+| Method | Path               | Description              |
+| ------ | ------------------ | ------------------------ |
+| GET    | `/api/admin/orders` | List all customer orders |
+
+## Validation
+
+Request validation errors return `400 Bad Request` with field-level details:
+
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "data": {
+    "price": "Price must be greater than 0",
+    "name": "Product name is required"
+  },
+  "timestamp": "2026-07-26T12:00:00"
+}
+```
+
+## Error Responses
+
+| Status | Description                          |
+| ------ | ------------------------------------ |
+| 400    | Bad request / validation error       |
+| 401    | Invalid or missing JWT               |
+| 404    | Resource not found                   |
+| 500    | Internal server error                |
+
+## Tech Stack
+
+- **Spring Boot 3.2** — Web, Security, Data JPA, Validation
+- **MySQL** — Database
+- **JWT (jjwt 0.12.3)** — Stateless authentication
+- **iText 7** — PDF invoice generation
+- **BCrypt** — Password hashing

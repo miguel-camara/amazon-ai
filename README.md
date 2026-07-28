@@ -33,6 +33,15 @@ mvn spring-boot:run
 
 The API starts at `http://localhost:8080`.
 
+### Swagger UI
+
+Once running, browse the interactive API documentation at:
+
+- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
+- **OpenAPI spec**: `http://localhost:8080/v3/api-docs`
+
+Swagger UI is publicly accessible (no authentication required) and includes a pre-configured **Authorize** button for the JWT Bearer token.
+
 ## Default Admin
 
 On first startup, the `DataInitializer` seeds the database with:
@@ -166,4 +175,5 @@ Request validation errors return `400 Bad Request` with field-level details:
 - **MySQL** — Database
 - **JWT (jjwt 0.12.3)** — Stateless authentication
 - **iText 7** — PDF invoice generation
+- **Springdoc OpenAPI 2.3** — Swagger UI + OpenAPI spec
 - **BCrypt** — Password hashing

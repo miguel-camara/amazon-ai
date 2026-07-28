@@ -6,29 +6,43 @@ Spring Boot REST API for an Amazon-style e-commerce platform with JWT authentica
 
 - Java 17+
 - Maven 3.8+
-- MySQL 8.0+
+- MySQL 8.0+ (production only)
 
-## Setup
+## Profiles
 
-### 1. Create the database
+The project uses Spring profiles to switch between environments:
 
-```sql
-CREATE DATABASE amazon_ecommerce;
-```
+| Profile | Database     | Usage      |
+| ------- | ------------ | ---------- |
+| `dev`   | H2 (in-memory) | Local development (default) |
+| `prod`  | MySQL        | Production                 |
 
-### 2. Configure credentials
+### Development (default)
 
-Edit `src/main/resources/application.properties`:
+No external database required — H2 starts in-memory and is auto-configured.
 
-```properties
-spring.datasource.username=your_user
-spring.datasource.password=your_password
-```
-
-### 3. Run the application
+- H2 Console: `http://localhost:8080/h2-console`
+  - JDBC URL: `jdbc:h2:mem:amazon_ecommerce`
+  - Username: `sa`, Password: *(blank)*
 
 ```bash
 mvn spring-boot:run
+```
+
+### Production
+
+Requires a running MySQL instance with an `amazon_ecommerce` database.
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=prod
+```
+
+Credentials can be overridden via environment variables:
+
+```bash
+set MYSQL_USER=myuser
+set MYSQL_PASSWORD=mypass
+mvn spring-boot:run -Dspring-boot.run.profiles=prod
 ```
 
 The API starts at `http://localhost:8080`.
@@ -172,7 +186,8 @@ Request validation errors return `400 Bad Request` with field-level details:
 ## Tech Stack
 
 - **Spring Boot 3.2** — Web, Security, Data JPA, Validation
-- **MySQL** — Database
+- **MySQL** — Production database
+- **H2** — Development in-memory database
 - **JWT (jjwt 0.12.3)** — Stateless authentication
 - **iText 7** — PDF invoice generation
 - **Springdoc OpenAPI 2.3** — Swagger UI + OpenAPI spec

@@ -17,6 +17,26 @@ The project uses Spring profiles to switch between environments:
 | `dev`   | H2 (in-memory) | Local development (default) |
 | `prod`  | MySQL        | Production                 |
 
+### Environment Variables
+
+Sensitive configuration is loaded from a `.env` file at the project root via [spring-dotenv](https://github.com/paulschwarz/spring-dotenv). **The `.env` file is gitignored** — never commit secrets.
+
+1. Copy the template and fill in your values:
+
+```bash
+cp .env.template .env
+```
+
+2. Available variables:
+
+| Variable          | Default                                              | Description            |
+| ----------------- | ---------------------------------------------------- | ---------------------- |
+| `MYSQL_USER`      | `root`                                               | MySQL username         |
+| `MYSQL_PASSWORD`  | `root`                                               | MySQL password         |
+| `JWT_SECRET`      | *(hardcoded fallback)*                               | 256-bit key (Base64)   |
+| `JWT_EXPIRATION_MS` | `86400000`                                         | Token lifetime (ms)    |
+| `SERVER_PORT`     | `8080`                                               | HTTP server port       |
+
 ### Development (default)
 
 No external database required — H2 starts in-memory and is auto-configured.

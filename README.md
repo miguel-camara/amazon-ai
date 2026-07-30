@@ -125,23 +125,42 @@ Response includes a `token` field — use this as the Bearer token.
 
 ### Products (`/api/products`)
 
-| Method | Path            | Auth     | Description              |
-| ------ | --------------- | -------- | ------------------------ |
-| GET    | `/api/products` | User     | List all products        |
-| GET    | `/api/products/{id}` | User | Get product by ID       |
-| POST   | `/api/products` | Admin    | Create product           |
-| PUT    | `/api/products/{id}` | Admin | Update product         |
-| DELETE | `/api/products/{id}` | Admin | Delete product         |
+| Method | Path                              | Auth  | Description                   |
+| ------ | --------------------------------- | ----- | ----------------------------- |
+| GET    | `/api/products`                   | User  | List all products             |
+| GET    | `/api/products/{id}`              | User  | Get product by ID             |
+| GET    | `/api/products/{id}/images/{idx}` | User  | Serve product image           |
+| POST   | `/api/products`                   | Admin | Create product (multipart)    |
+| PUT    | `/api/products/{id}`              | Admin | Update product (multipart)    |
+| POST   | `/api/products/{id}/images`       | Admin | Add images to existing product|
+| DELETE | `/api/products/{id}/images/{idx}` | Admin | Delete a specific image       |
+| DELETE | `/api/products/{id}`              | Admin | Delete product + all images   |
 
-```json
-// POST / PUT request body
-{
-  "name": "Wireless Mouse",
-  "description": "Ergonomic wireless mouse",
-  "price": 29.99,
-  "quantity": 100,
-  "imageUrls": ["https://example.com/mouse.jpg"]
-}
+**Create / Update** — send `multipart/form-data` with two parts:
+
+| Part        | Type               | Required | Description        |
+| ----------- | ------------------ | -------- | ------------------ |
+| `product`   | JSON (ProductRequest) | yes    | Product fields     |
+| `images`    | File(s)            | no       | One or more images |
+
+Supported image types: `image/jpeg`, `image/png`, `image/gif`, `image/webp`. Max 5 MB per file.
+
+Example using `curl`:
+
+```bash
+curl -X POST http://localhost:8080/api/products \
+  -H "Authorization: Bearer <token>" \
+  -F 'product={"name":"Wireless Mouse","price":29.99,"quantity":100};type=application/json' \
+  -F "images=@mouse.jpg" \
+  -F "images=@mouse2.png"
+```
+
+**Add images** to an existing product:
+
+```bash
+curl -X POST http://localhost:8080/api/products/1/images \
+  -H "Authorization: Bearer <token>" \
+  -F "images=@new-image.jpg"
 ```
 
 ### Cart (`/api/cart`) — USER role only

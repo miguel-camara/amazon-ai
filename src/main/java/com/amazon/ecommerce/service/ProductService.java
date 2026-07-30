@@ -5,8 +5,10 @@ import com.amazon.ecommerce.dto.response.ProductResponse;
 import com.amazon.ecommerce.entity.Product;
 import com.amazon.ecommerce.exception.ResourceNotFoundException;
 import com.amazon.ecommerce.repository.ProductRepository;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -14,9 +16,11 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final FileStorageService fileStorageService;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, FileStorageService fileStorageService) {
         this.productRepository = productRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     public List<ProductResponse> getAllProducts() {
@@ -26,45 +30,92 @@ public class ProductService {
     }
 
     public ProductResponse getProductById(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+        Product product = findProduct(id);
         return toResponse(product);
     }
 
+    public Resource getProductImage(Long productId, int imageIndex) {
+        Product product = findProduct(productId);
+        List<String> images = product.getImageUrls();
+        if (imageIndex < 0 || imageIndex >= images.size()) {
+            throw new ResourceNotFoundException("Image not found at index " + imageIndex);
+        }
+        return fileStorageService.loadFile(images.get(imageIndex));
+    }
+
     @Transactional
-    public ProductResponse createProduct(ProductRequest request) {
+    public ProductResponse createProduct(ProductRequest request, MultipartFile[] images) {
         Product product = Product.builder()
                 .name(request.getName())
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .quantity(request.getQuantity())
-                .imageUrls(request.getImageUrls() != null ? request.getImageUrls() : List.of())
                 .build();
+
+        if (images != null && images.length > 0) {
+            List<String> storedNames = fileStorageService.storeFiles(images);
+            product.setImageUrls(storedNames);
+        }
+
         product = productRepository.save(product);
         return toResponse(product);
     }
 
     @Transactional
-    public ProductResponse updateProduct(Long id, ProductRequest request) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+    public ProductResponse updateProduct(Long id, ProductRequest request, MultipartFile[] images) {
+        Product product = findProduct(id);
 
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setQuantity(request.getQuantity());
-        product.setImageUrls(request.getImageUrls() != null ? request.getImageUrls() : List.of());
 
+        if (images != null && images.length > 0) {
+            fileStorageService.deleteFiles(product.getImageUrls());
+            List<String> storedNames = fileStorageService.storeFiles(images);
+            product.setImageUrls(storedNames);
+        }
+
+        product = productRepository.save(product);
+        return toResponse(product);
+    }
+
+    @Transactional
+    public ProductResponse addImages(Long id, MultipartFile[] images) {
+        Product product = findProduct(id);
+        if (images != null && images.length > 0) {
+            List<String> storedNames = fileStorageService.storeFiles(images);
+            product.getImageUrls().addAll(storedNames);
+            product = productRepository.save(product);
+        }
+        return toResponse(product);
+    }
+
+    @Transactional
+    public ProductResponse deleteImage(Long id, int imageIndex) {
+        Product product = findProduct(id);
+        List<String> images = product.getImageUrls();
+
+        if (imageIndex < 0 || imageIndex >= images.size()) {
+            throw new ResourceNotFoundException("Image not found at index " + imageIndex);
+        }
+
+        String removed = images.remove(imageIndex);
+        fileStorageService.deleteFile(removed);
         product = productRepository.save(product);
         return toResponse(product);
     }
 
     @Transactional
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Product", id);
-        }
-        productRepository.deleteById(id);
+        Product product = findProduct(id);
+        fileStorageService.deleteFiles(product.getImageUrls());
+        productRepository.delete(product);
+    }
+
+    private Product findProduct(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
     }
 
     private ProductResponse toResponse(Product product) {

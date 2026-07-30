@@ -2,7 +2,6 @@ package com.amazon.ecommerce.dto.request;
 
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
-import java.util.List;
 
 public class ProductRequest {
 
@@ -20,16 +19,13 @@ public class ProductRequest {
     @Min(value = 0, message = "Quantity cannot be negative")
     private Integer quantity;
 
-    private List<String> imageUrls;
-
     public ProductRequest() {}
 
-    public ProductRequest(String name, String description, BigDecimal price, Integer quantity, List<String> imageUrls) {
+    public ProductRequest(String name, String description, BigDecimal price, Integer quantity) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.quantity = quantity;
-        this.imageUrls = imageUrls;
     }
 
     public String getName() { return name; }
@@ -40,6 +36,4 @@ public class ProductRequest {
     public void setPrice(BigDecimal price) { this.price = price; }
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
-    public List<String> getImageUrls() { return imageUrls; }
-    public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
 }

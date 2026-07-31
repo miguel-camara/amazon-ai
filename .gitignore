@@ -1,6 +1,7 @@
 node_modules
 pnpm-lock.yaml
 HELP.md
+uploads/
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

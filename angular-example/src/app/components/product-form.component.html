@@ -1,0 +1,39 @@
+<h2>{{ productId ? 'Update' : 'Create' }} Product</h2>
+
+<form #productForm="ngForm" (ngSubmit)="save()">
+  <div>
+    <label>Name</label>
+    <input name="name" [(ngModel)]="product.name" required />
+  </div>
+
+  <div>
+    <label>Description</label>
+    <input name="description" [(ngModel)]="product.description" />
+  </div>
+
+  <div>
+    <label>Price</label>
+    <input name="price" type="number" step="0.01" [(ngModel)]="product.price" required />
+  </div>
+
+  <div>
+    <label>Quantity</label>
+    <input name="quantity" type="number" [(ngModel)]="product.quantity" required />
+  </div>
+
+  <div>
+    <label>Images</label>
+    <input
+      name="images"
+      type="file"
+      multiple
+      accept="image/jpeg,image/png,image/gif,image/webp"
+      (change)="onFileSelected($event)"
+    />
+    <small>Selected: {{ images.length }} file(s)</small>
+  </div>
+
+  <button type="submit" [disabled]="productForm.invalid">
+    {{ productId ? 'Update' : 'Create' }}
+  </button>
+</form>

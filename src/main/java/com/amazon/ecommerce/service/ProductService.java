@@ -9,7 +9,7 @@ import java.util.List;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+// import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ProductService {
@@ -49,19 +49,16 @@ public class ProductService {
 
   @Transactional
   public ProductResponse createProduct(
-      ProductRequest request,
-      MultipartFile image) {
+      ProductRequest request
+  // ,MultipartFile image
+  ) {
     Product product = Product.builder()
         .name(request.getName())
         .description(request.getDescription())
         .price(request.getPrice())
         .quantity(request.getQuantity())
+        .imageUrls(request.getImages())
         .build();
-
-    if (image != null) {
-      var storedNames = fileStorageService.storeFile(image);
-      // product.setImageUrls(storedNames);
-    }
 
     product = productRepository.save(product);
     return toResponse(product);
@@ -70,35 +67,31 @@ public class ProductService {
   @Transactional
   public ProductResponse updateProduct(
       Long id,
-      ProductRequest request,
-      MultipartFile image) {
+      ProductRequest request
+  // ,MultipartFile image
+  ) {
     Product product = findProduct(id);
 
     product.setName(request.getName());
     product.setDescription(request.getDescription());
     product.setPrice(request.getPrice());
     product.setQuantity(request.getQuantity());
-
-    if (image != null) {
-      fileStorageService.deleteFiles(product.getImageUrls());
-      var storedNames = fileStorageService.storeFile(image);
-      product.setImageUrls(storedNames);
-    }
+    product.setImageUrls(request.getImages());
 
     product = productRepository.save(product);
     return toResponse(product);
   }
 
-  @Transactional
-  public ProductResponse addImages(Long id, MultipartFile[] images) {
-    Product product = findProduct(id);
-    if (images != null && images.length > 0) {
-      List<String> storedNames = fileStorageService.storeFiles(images);
-      product.getImageUrls().addAll(storedNames);
-      product = productRepository.save(product);
-    }
-    return toResponse(product);
-  }
+  // @Transactional
+  // public ProductResponse addImages(Long id, MultipartFile[] images) {
+  // Product product = findProduct(id);
+  // if (images != null && images.length > 0) {
+  // List<String> storedNames = fileStorageService.storeFiles(images);
+  // product.getImageUrls().addAll(storedNames);
+  // product = productRepository.save(product);
+  // }
+  // return toResponse(product);
+  // }
 
   @Transactional
   public ProductResponse deleteImage(Long id, int imageIndex) {

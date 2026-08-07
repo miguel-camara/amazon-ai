@@ -6,13 +6,13 @@ import com.amazon.ecommerce.dto.response.ProductResponse;
 import com.amazon.ecommerce.service.ProductService;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.core.io.Resource;
+// import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+// import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+// import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/products")
@@ -37,60 +37,56 @@ public class ProductController {
     return ResponseEntity.ok(ApiResponse.success(product));
   }
 
-  @GetMapping("/{productId}/images/{imageIndex}")
-  public ResponseEntity<Resource> getProductImage(
-      @PathVariable Long productId,
-      @PathVariable int imageIndex) {
-    Resource image = productService.getProductImage(productId, imageIndex);
-    return ResponseEntity.ok()
-        .contentType(MediaType.IMAGE_JPEG)
-        .body(image);
-  }
-
   // @PreAuthorize("hasRole('ADMIN')")
-  // @PostMapping()
-  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping()
   public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
-      @Valid @RequestPart("product") ProductRequest request,
-      @RequestPart(value = "images", required = false) MultipartFile images) {
-    ProductResponse product = productService.createProduct(request, images);
+      // @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+      @Valid @RequestPart("product") ProductRequest request
+  // ,@RequestPart(value = "images", required = false) MultipartFile images
+  ) {
+    // ProductResponse product = productService.createProduct(request, images);
+    ProductResponse product = productService.createProduct(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(
         ApiResponse.success("Product created successfully", product));
   }
 
-  @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PutMapping(value = "/{id}")
+  // @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
       @PathVariable Long id,
-      @Valid @RequestPart("product") ProductRequest request,
-      @RequestPart(value = "images", required = false) MultipartFile image) {
+      @Valid @RequestPart("product") ProductRequest request
+  // ,@RequestPart(value = "images", required = false) MultipartFile image
+  ) {
     ProductResponse product = productService.updateProduct(
         id,
-        request,
-        image);
+        request
+    // , image
+    );
     return ResponseEntity.ok(
         ApiResponse.success("Product updated successfully", product));
   }
 
-  @PostMapping(value = "/{id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<ApiResponse<ProductResponse>> addImages(
-      @PathVariable Long id,
-      @RequestPart("images") MultipartFile[] images) {
-    ProductResponse product = productService.addImages(id, images);
-    return ResponseEntity.ok(
-        ApiResponse.success("Images added successfully", product));
-  }
+  // @PostMapping(value = "/{id}/images", consumes =
+  // MediaType.MULTIPART_FORM_DATA_VALUE)
+  // @PreAuthorize("hasRole('ADMIN')")
+  // public ResponseEntity<ApiResponse<ProductResponse>> addImages(
+  // @PathVariable Long id,
+  // @RequestPart("images") MultipartFile[] images) {
+  // ProductResponse product = productService.addImages(id, images);
+  // return ResponseEntity.ok(
+  // ApiResponse.success("Images added successfully", product));
+  // }
 
-  @DeleteMapping("/{id}/images/{imageIndex}")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<ApiResponse<ProductResponse>> deleteImage(
-      @PathVariable Long id,
-      @PathVariable int imageIndex) {
-    ProductResponse product = productService.deleteImage(id, imageIndex);
-    return ResponseEntity.ok(
-        ApiResponse.success("Image deleted successfully", product));
-  }
+  // @DeleteMapping("/{id}/images/{imageIndex}")
+  // @PreAuthorize("hasRole('ADMIN')")
+  // public ResponseEntity<ApiResponse<ProductResponse>> deleteImage(
+  // @PathVariable Long id,
+  // @PathVariable int imageIndex) {
+  // ProductResponse product = productService.deleteImage(id, imageIndex);
+  // return ResponseEntity.ok(
+  // ApiResponse.success("Image deleted successfully", product));
+  // }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
